@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0B0C2A">
+<title>Flores Para Ti 🌻</title>
+
+<!-- Fuente redondeada (si no hay internet, cae a la fuente del sistema sin romper nada) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+/* ============================================================
+   🎨 PERSONALIZACIÓN RÁPIDA
+   Cambiá acá los colores. El nombre, la fecha y la música
+   se cambian en el bloque CONFIG del <script> (al final).
+   ============================================================ */
+:root{
+  --bg-1:#0B0C2A;         /* azul noche */
+  --bg-2:#1A0B2E;         /* púrpura profundo */
+  --amarillo:#FFD700;     /* amarillo principal */
+  --amarillo-claro:#FFEA00;
+  --marron:#5D4037;       /* centro del girasol */
+  --verde:#2E7D32;        /* tallos y hojas */
+  --texto:#FFF6D8;
+
+  --glow: 0 0 6px rgba(255,215,0,.9), 0 0 18px rgba(255,215,0,.55), 0 0 44px rgba(255,200,0,.35);
+}
+
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+
+html,body{height:100%}
+
+body{
+  min-height:100svh;
+  background:
+    radial-gradient(120% 80% at 50% -10%, #23205c 0%, rgba(35,32,92,0) 60%),
+    radial-gradient(90% 60% at 80% 100%, #3a1152 0%, rgba(58,17,82,0) 65%),
+    linear-gradient(170deg, var(--bg-1) 0%, #140a2c 55%, var(--bg-2) 100%);
+  background-attachment:fixed;
+  color:var(--texto);
+  font-family:"Fredoka","Baloo 2",-apple-system,"Segoe UI Rounded","SF Pro Rounded",system-ui,sans-serif;
+  overflow:hidden;
+  position:relative;
+}
+
+/* Cielo (estrellas + partículas) */
+#cielo{position:fixed;inset:0;width:100%;height:100%;display:block;z-index:0}
+
+/* Contenedor principal */
+.app{
+  position:relative;z-index:2;
+  min-height:100svh;
+  display:flex;flex-direction:column;align-items:center;
+  padding:calc(env(safe-area-inset-top,0px) + 18px) 18px calc(env(safe-area-inset-bottom,0px) + 16px);
+  gap:10px;
+}
+
+/* ---------- Encabezado ---------- */
+header{text-align:center;animation:entrar .9s .1s both cubic-bezier(.22,1,.36,1)}
+
+h1{
+  font-size:clamp(2.1rem,10.5vw,3.4rem);
+  font-weight:700;letter-spacing:.01em;line-height:1.05;
+  color:#FFF8C9;
+  text-shadow:var(--glow);
+  animation:neon 4.5s ease-in-out infinite;
+}
+h1 .sol{display:inline-block;animation:girar 9s linear infinite;filter:drop-shadow(0 0 10px rgba(255,215,0,.6))}
+
+.para{
+  margin-top:6px;font-size:clamp(.95rem,4.2vw,1.15rem);font-weight:500;
+  color:#E9D9FF;opacity:.92;
+}
+
+.fecha{
+  margin-top:12px;display:inline-block;
+  padding:7px 16px;border-radius:999px;
+  font-size:clamp(.9rem,4vw,1.05rem);font-weight:600;
+  color:#FFF0B8;
+  background:rgba(255,215,0,.08);
+  border:1px solid rgba(255,215,0,.28);
+  box-shadow:0 0 22px rgba(255,215,0,.12) inset;
+  backdrop-filter:blur(6px);
+}
+
+/* ---------- Ramo ---------- */
+.ramo{
+  flex:1;display:grid;place-items:center;width:100%;
+  min-height:0;cursor:pointer;
+}
+.ramo svg{
+  width:min(92vw,420px);
+  height:auto;max-height:100%;
+  display:block;
+  transition:transform .35s cubic-bezier(.34,1.56,.64,1);
+}
+.ramo:active svg{transform:scale(.97)}
+
+.grow{transform-box:view-box;transform-origin:200px 452px;animation:crecer 1.1s cubic-bezier(.22,1,.36,1) both}
+.sway{transform-box:view-box;transform-origin:200px 452px;animation:mecer 6s ease-in-out infinite;animation-delay:inherit}
+.brillo{animation:latir 3.6s ease-in-out infinite}
+
+/* ---------- Reproductor ---------- */
+.player{
+  width:min(100%,420px);
+  display:flex;align-items:center;gap:12px;
+  padding:9px 16px 9px 9px;
+  border-radius:999px;
+  background:rgba(12,10,36,.55);
+  border:1px solid rgba(255,255,255,.14);
+  box-shadow:0 10px 30px rgba(0,0,0,.45), 0 0 0 1px rgba(255,215,0,.06) inset;
+  backdrop-filter:blur(14px);
+  animation:entrar .9s .5s both cubic-bezier(.22,1,.36,1);
+}
+
+.btn-play{
+  flex:none;width:46px;height:46px;border:0;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%, #FFF08A, var(--amarillo) 60%, #E6A700);
+  box-shadow:0 0 18px rgba(255,215,0,.5), 0 4px 10px rgba(0,0,0,.4);
+  display:grid;place-items:center;cursor:pointer;
+  transition:transform .18s ease;
+}
+.btn-play:active{transform:scale(.9)}
+.btn-play svg{width:18px;height:18px;fill:#2A1B00}
+
+.pista{flex:1;min-width:0}
+.barra{
+  height:5px;border-radius:999px;background:rgba(255,255,255,.16);overflow:hidden;
+}
+.avance{
+  height:100%;width:0%;border-radius:999px;
+  background:linear-gradient(90deg,#FFEA00,var(--amarillo));
+  box-shadow:0 0 12px rgba(255,215,0,.8);
+}
+.tiempos{
+  display:flex;justify-content:space-between;
+  margin-top:6px;font-size:.72rem;font-weight:500;
+  color:rgba(255,246,216,.7);font-variant-numeric:tabular-nums;
+}
+
+/* ---------- Botón Tócame ---------- */
+.tocame{
+  border:1px solid rgba(255,215,0,.45);
+  background:rgba(255,215,0,.1);
+  color:#FFF0B8;
+  font-family:inherit;font-size:1rem;font-weight:600;
+  padding:12px 30px;border-radius:999px;cursor:pointer;
+  box-shadow:0 0 26px rgba(255,215,0,.18);
+  animation:entrar .9s .4s both cubic-bezier(.22,1,.36,1), respirar 3s 1.4s ease-in-out infinite;
+  transition:transform .18s ease, background .25s ease;
+}
+.tocame:active{transform:scale(.94);background:rgba(255,215,0,.2)}
+
+/* ---------- Mensaje secreto ---------- */
+.secreto{
+  position:fixed;inset:0;z-index:5;display:grid;place-items:center;
+  pointer-events:none;padding:28px;text-align:center;
+  opacity:0;
+}
+.secreto.ver{animation:revelar 3.2s cubic-bezier(.22,1,.36,1) forwards}
+.secreto span{
+  font-size:clamp(1.6rem,8vw,2.6rem);font-weight:700;
+  color:#FFF8C9;text-shadow:var(--glow);
+  line-height:1.2;
+}
+
+/* ---------- Pétalos que caen ---------- */
+.petalo{
+  position:fixed;top:-30px;z-index:4;pointer-events:none;
+  width:13px;height:20px;border-radius:60% 60% 50% 50%/70% 70% 40% 40%;
+  background:linear-gradient(160deg,var(--amarillo-claro),#FFB300);
+  box-shadow:0 0 10px rgba(255,215,0,.45);
+  will-change:transform,opacity;
+}
+
+/* ---------- Animaciones ---------- */
+@keyframes entrar{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+@keyframes crecer{
+  0%{opacity:0;transform:translateY(24px) scale(.05)}
+  60%{opacity:1}
+  100%{opacity:1;transform:none}
+}
+@keyframes mecer{
+  0%,100%{transform:rotate(-2.2deg)}
+  50%{transform:rotate(2.2deg)}
+}
+@keyframes latir{0%,100%{opacity:.35}50%{opacity:.85}}
+@keyframes girar{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+@keyframes neon{
+  0%,100%{text-shadow:0 0 6px rgba(255,215,0,.9),0 0 18px rgba(255,215,0,.55),0 0 44px rgba(255,200,0,.35)}
+  50%{text-shadow:0 0 10px rgba(255,235,120,1),0 0 30px rgba(255,215,0,.8),0 0 70px rgba(255,200,0,.5)}
+}
+@keyframes respirar{0%,100%{box-shadow:0 0 26px rgba(255,215,0,.18)}50%{box-shadow:0 0 40px rgba(255,215,0,.38)}}
+@keyframes revelar{
+  0%{opacity:0;transform:scale(.7)}
+  18%{opacity:1;transform:scale(1)}
+  75%{opacity:1;transform:scale(1)}
+  100%{opacity:0;transform:scale(1.08)}
+}
+@keyframes caer{
+  0%{transform:translate3d(0,0,0) rotate(0);opacity:1}
+  100%{transform:translate3d(var(--dx),105svh,0) rotate(var(--rot));opacity:0}
+}
+
+/* Pantallas altas: un poco más de aire */
+@media (min-height:760px){ .app{gap:16px} }
+
+/* Accesibilidad: respeta "reducir movimiento" */
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important}
+}
+</style>
+</head>
+
+<body>
+
+<canvas id="cielo"></canvas>
+
+<div class="app">
+
+  <header>
+    <!-- 🔤 Título principal -->
+    <h1><span class="sol">🌻</span> Flores para Pauli</h1>
+    <!-- 🔤 Cambiá "Pauli" por otro nombre acá y en CONFIG.nombre -->
+    <p class="para">Hecho con amor para ti ❤️</p>
+    <!-- 📅 Cambiá la fecha acá -->
+    <p class="fecha">Feliz 21 de septiembre ❤️</p>
+  </header>
+
+  <!-- 🌻 El ramo se dibuja con JS dentro de este contenedor -->
+  <div class="ramo" id="ramo" role="img" aria-label="Ramo de siete girasoles"></div>
+
+  <button class="tocame" id="tocame">Tocame ✨</button>
+
+  <!-- 🎵 Reproductor -->
+  <div class="player">
+    <button class="btn-play" id="btnPlay" aria-label="Reproducir o pausar">
+      <svg id="icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+    </button>
+    <div class="pista">
+      <div class="barra"><div class="avance" id="avance"></div></div>
+      <div class="tiempos"><span id="actual">0:00</span><span id="total">1:36</span></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="secreto" id="secreto"><span id="secretoTexto"></span></div>
+
+<script>
+/* ============================================================
+   ⚙️ CONFIG — todo lo que querés cambiar está acá
+   ============================================================ */
+const CONFIG = {
+  nombre: "Pauli",              // 🔤 nombre de la persona
+  duracion: 96,                 // ⏱️ duración en segundos (96 = 1:36)
+  audioURL: "",                 // 🎵 poné acá la URL de un .mp3 para música real.
+                                //    Si queda vacío, el reproductor se simula con JS.
+  mensajes: [                   // 💌 mensajes secretos (salen al tocar)
+    "Te quiero, Pauli",
+    "Sos mi persona favorita",
+    "Gracias por existir",
+    "Cada día, un girasol más"
+  ]
+};
+
+/* ============================================================
+   🌌 CIELO: estrellas titilantes + partículas amarillas
+   ============================================================ */
+const cv = document.getElementById('cielo');
+const ctx = cv.getContext('2d');
+let W = 0, H = 0, DPR = Math.min(window.devicePixelRatio || 1, 2);
+let estrellas = [], particulas = [];
+
+function medir(){
+  W = cv.clientWidth; H = cv.clientHeight;
+  cv.width = W * DPR; cv.height = H * DPR;
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  crearEstrellas();
+}
+
+function crearEstrellas(){
+  const n = Math.round((W * H) / 6500);
+  estrellas = Array.from({length:n}, () => ({
+    x: Math.random()*W, y: Math.random()*H,
+    r: Math.random()*1.3 + .3,
+    f: Math.random()*Math.PI*2,
+    v: Math.random()*.9 + .35,
+    azul: Math.random() < .3
+  }));
+}
+
+// Partícula amarilla flotante (también sirve para los destellos al tocar)
+function nuevaParticula(x, y, fuerza){
+  const a = Math.random()*Math.PI*2;
+  const s = fuerza ? Math.random()*3.4 + 1 : 0;
+  return {
+    x: x ?? Math.random()*W,
+    y: y ?? H + 12,
+    vx: fuerza ? Math.cos(a)*s : (Math.random()-.5)*.28,
+    vy: fuerza ? Math.sin(a)*s : -(Math.random()*.42 + .16),
+    r: Math.random()*2.1 + .9,
+    vida: 1,
+    decaer: fuerza ? Math.random()*.012 + .006 : Math.random()*.0034 + .0016
+  };
+}
+for(let i=0;i<46;i++){ const p = nuevaParticula(undefined, Math.random()*window.innerHeight); particulas.push(p); }
+
+// 💥 Estallido de destellos en un punto
+function estallido(x, y, cantidad = 55){
+  for(let i=0;i<cantidad;i++) particulas.push(nuevaParticula(x, y, true));
+}
+
+let t0 = performance.now();
+function pintar(ahora){
+  const dt = Math.min((ahora - t0)/16.67, 3); t0 = ahora;
+  ctx.clearRect(0,0,W,H);
+
+  // estrellas
+  for(const e of estrellas){
+    e.f += 0.022 * e.v * dt;
+    const brillo = .32 + Math.abs(Math.sin(e.f)) * .68;
+    ctx.beginPath();
+    ctx.fillStyle = e.azul ? `rgba(190,205,255,${brillo})` : `rgba(255,248,210,${brillo})`;
+    ctx.arc(e.x, e.y, e.r, 0, 6.2832);
+    ctx.fill();
+  }
+
+  // partículas amarillas
+  ctx.shadowColor = 'rgba(255,215,0,.85)';
+  for(let i=particulas.length-1;i>=0;i--){
+    const p = particulas[i];
+    p.x += p.vx*dt; p.y += p.vy*dt;
+    p.vy += 0.008*dt;           // gravedad muy suave
+    p.vida -= p.decaer*dt;
+    if(p.vida <= 0 || p.y < -30 || p.y > H+40){
+      particulas.splice(i,1);
+      if(particulas.length < 46) particulas.push(nuevaParticula());
+      continue;
+    }
+    ctx.shadowBlur = 10;
+    ctx.beginPath();
+    ctx.fillStyle = `rgba(255,224,90,${Math.max(p.vida,0)*.9})`;
+    ctx.arc(p.x, p.y, p.r, 0, 6.2832);
+    ctx.fill();
+  }
+  ctx.shadowBlur = 0;
+
+  requestAnimationFrame(pintar);
+}
+medir();
+addEventListener('resize', medir);
+requestAnimationFrame(pintar);
+
+/* ============================================================
+   🌻 RAMO: 7 girasoles en SVG generado por JS
+   ============================================================ */
+const BASE = {x:200, y:452};   // punto donde se juntan todos los tallos
+
+// Posición, tamaño y retraso de cada girasol
+const FLORES = [
+  {x:120, y:128, s:.95, d:.00, sway:6.2},
+  {x:200, y: 92, s:1.06, d:.10, sway:5.4},
+  {x:282, y:128, s:.95, d:.20, sway:6.6},
+  {x: 88, y:212, s:.86, d:.30, sway:5.8},
+  {x:200, y:186, s:1.00, d:.40, sway:7.0},
+  {x:314, y:212, s:.86, d:.50, sway:6.0},
+  {x:200, y:272, s:.80, d:.60, sway:6.8}
+];
+
+// Un girasol centrado en (0,0), escalado
+function cabeza(s){
+  let p = '';
+  // pétalos de atrás
+  for(let i=0;i<16;i++){
+    p += `<ellipse rx="9" ry="27" cy="-30" fill="url(#petaloA)" transform="rotate(${i*22.5})"/>`;
+  }
+  // pétalos de adelante
+  for(let i=0;i<12;i++){
+    p += `<ellipse rx="7.5" ry="21" cy="-23" fill="url(#petaloB)" transform="rotate(${i*30+15})"/>`;
+  }
+  // semillas del centro
+  let semillas = '';
+  for(let i=0;i<22;i++){
+    const a = i*2.39996, r = 3.2*Math.sqrt(i+1);
+    semillas += `<circle cx="${(Math.cos(a)*r).toFixed(1)}" cy="${(Math.sin(a)*r).toFixed(1)}" r="1.5" fill="#3E2723" opacity=".75"/>`;
+  }
+  return `
+    <g class="cabeza" transform="scale(${s})">
+      <circle class="brillo" r="58" fill="url(#halo)"/>
+      ${p}
+      <circle r="17" fill="var(--marron)"/>
+      <circle r="17" fill="none" stroke="#3E2723" stroke-width="2" opacity=".5"/>
+      ${semillas}
+    </g>`;
+}
+
+// Punto sobre la curva del tallo
+function enCurva(t, p0, c, p1){
+  const u = 1-t;
+  return {
+    x: u*u*p0.x + 2*u*t*c.x + t*t*p1.x,
+    y: u*u*p0.y + 2*u*t*c.y + t*t*p1.y
+  };
+}
+
+let tallos = '';
+FLORES.forEach(f => {
+  const c = {x: BASE.x + (f.x-BASE.x)*.18, y: (BASE.y + f.y)/2};
+  const ancho = 6.5*f.s;
+  const hoja = enCurva(.52, BASE, c, f);
+  const lado = f.x < BASE.x ? -1 : (f.x > BASE.x ? 1 : (Math.random()<.5?-1:1));
+  const ang = lado * 32;
+
+  tallos += `
+  <g class="grow" style="animation-delay:${f.d}s">
+   <g class="sway" style="animation-delay:${f.d}s;animation-duration:${f.sway}s">
+    <path d="M${BASE.x},${BASE.y} Q${c.x.toFixed(1)},${c.y.toFixed(1)} ${f.x},${f.y}"
+          stroke="url(#tallo)" stroke-width="${ancho.toFixed(1)}" stroke-linecap="round" fill="none"/>
+    <path d="M0,0 Q${20*lado},-15 ${44*lado},-3 Q${20*lado},12 0,0 Z"
+          fill="url(#hoja)" transform="translate(${hoja.x.toFixed(1)},${hoja.y.toFixed(1)}) rotate(${ang})"/>
+    <g transform="translate(${f.x},${f.y})">${cabeza(f.s)}</g>
+   </g>
+  </g>`;
+});
+
+document.getElementById('ramo').innerHTML = `
+<svg viewBox="0 0 400 470" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="petaloA" cx="50%" cy="85%">
+      <stop offset="0%" stop-color="#FFB300"/>
+      <stop offset="45%" stop-color="var(--amarillo)"/>
+      <stop offset="100%" stop-color="var(--amarillo-claro)"/>
+    </radialGradient>
+    <radialGradient id="petaloB" cx="50%" cy="85%">
+      <stop offset="0%" stop-color="#FFC107"/>
+      <stop offset="100%" stop-color="#FFF176"/>
+    </radialGradient>
+    <linearGradient id="tallo" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0%" stop-color="#1B5E20"/>
+      <stop offset="100%" stop-color="#43A047"/>
+    </linearGradient>
+    <linearGradient id="hoja" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="var(--verde)"/>
+      <stop offset="100%" stop-color="#66BB6A"/>
+    </linearGradient>
+    <radialGradient id="halo">
+      <stop offset="0%" stop-color="rgba(255,225,80,.55)"/>
+      <stop offset="70%" stop-color="rgba(255,215,0,0)"/>
+    </radialGradient>
+    <linearGradient id="lazo" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FFE082"/>
+      <stop offset="100%" stop-color="#E6A700"/>
+    </linearGradient>
+  </defs>
+
+  ${tallos}
+
+  <!-- 🎀 Lazo que ata el ramo -->
+  <g class="grow" style="animation-delay:.72s">
+    <path d="M176,436 Q200,428 224,436 L214,464 Q200,470 186,464 Z" fill="url(#lazo)" opacity=".92"/>
+    <path d="M176,436 Q152,424 148,444 Q166,452 180,444 Z" fill="url(#lazo)" opacity=".8"/>
+    <path d="M224,436 Q248,424 252,444 Q234,452 220,444 Z" fill="url(#lazo)" opacity=".8"/>
+  </g>
+</svg>`;
+
+/* ============================================================
+   🎵 REPRODUCTOR (simulado, o real si ponés CONFIG.audioURL)
+   ============================================================ */
+const elAvance = document.getElementById('avance');
+const elActual = document.getElementById('actual');
+const elTotal  = document.getElementById('total');
+const btnPlay  = document.getElementById('btnPlay');
+const icono    = document.getElementById('icono');
+
+const PLAY  = 'M8 5v14l11-7z';
+const PAUSE = 'M6 4h4v16H6zM14 4h4v16h-4z';
+
+let audio = null;
+if(CONFIG.audioURL){
+  audio = new Audio(CONFIG.audioURL);
+  audio.loop = true;
+  audio.preload = 'auto';
+}
+
+let duracion = CONFIG.duracion;
+let segundos = 0;
+let sonando  = true;      // arranca corriendo en 0:00
+let ultimo   = performance.now();
+
+function formato(s){
+  s = Math.max(0, Math.floor(s));
+  return Math.floor(s/60) + ':' + String(s%60).padStart(2,'0');
+}
+elTotal.textContent = formato(duracion);
+
+function tic(ahora){
+  const dt = (ahora - ultimo)/1000; ultimo = ahora;
+  if(audio && !audio.paused){
+    segundos = audio.currentTime;
+    if(audio.duration) duracion = audio.duration;
+  }else if(sonando){
+    segundos += dt;
+    if(segundos >= duracion) segundos = 0;   // vuelve a empezar
+  }
+  elAvance.style.width = (segundos/duracion*100).toFixed(2) + '%';
+  elActual.textContent = formato(segundos);
+  elTotal.textContent  = formato(duracion);
+  requestAnimationFrame(tic);
+}
+requestAnimationFrame(tic);
+
+function pintarBoton(){
+  icono.firstElementChild.setAttribute('d', sonando ? PAUSE : PLAY);
+}
+pintarBoton();
+
+btnPlay.addEventListener('click', () => {
+  sonando = !sonando;
+  if(audio){ sonando ? audio.play().catch(()=>{}) : audio.pause(); }
+  pintarBoton();
+});
+
+// Los navegadores móviles solo dejan sonar tras el primer toque
+addEventListener('pointerdown', function arrancar(){
+  if(audio && sonando) audio.play().catch(()=>{});
+  removeEventListener('pointerdown', arrancar);
+}, {once:false});
+
+/* ============================================================
+   ✨ INTERACCIÓN: destellos, pétalos y mensaje secreto
+   ============================================================ */
+const secreto = document.getElementById('secreto');
+const secretoTexto = document.getElementById('secretoTexto');
+let iMensaje = 0;
+
+function petalos(cantidad = 16){
+  for(let i=0;i<cantidad;i++){
+    const p = document.createElement('div');
+    p.className = 'petalo';
+    p.style.left = Math.random()*100 + 'vw';
+    p.style.setProperty('--dx', (Math.random()*180 - 90) + 'px');
+    p.style.setProperty('--rot', (Math.random()*900 - 450) + 'deg');
+    p.style.animation = `caer ${(Math.random()*2.6 + 3.2).toFixed(2)}s linear forwards`;
+    p.style.animationDelay = (Math.random()*.9).toFixed(2) + 's';
+    document.body.appendChild(p);
+    p.addEventListener('animationend', () => p.remove());
+  }
+}
+
+function mostrarSecreto(){
+  secretoTexto.textContent = CONFIG.mensajes[iMensaje % CONFIG.mensajes.length]
+                              .replace('Pauli', CONFIG.nombre);
+  iMensaje++;
+  secreto.classList.remove('ver');
+  void secreto.offsetWidth;          // reinicia la animación
+  secreto.classList.add('ver');
+}
+
+function celebrar(ev){
+  const x = ev && ev.clientX ? ev.clientX : innerWidth/2;
+  const y = ev && ev.clientY ? ev.clientY : innerHeight/2;
+  estallido(x, y, 60);
+  petalos(18);
+  mostrarSecreto();
+  if(navigator.vibrate) navigator.vibrate(18);
+}
+
+document.getElementById('ramo').addEventListener('click', celebrar);
+document.getElementById('tocame').addEventListener('click', celebrar);
+
+// Un saludo al abrir la tarjeta
+setTimeout(() => { estallido(innerWidth/2, innerHeight*.55, 40); petalos(10); }, 1300);
+</script>
+</body>
+</html>
